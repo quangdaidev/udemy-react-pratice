@@ -10,6 +10,7 @@ import ModalConfirm from "./ModalConfirm";
 import './TableUser.scss'
 
 import { debounce } from "lodash";
+import { CSVLink, CSVDownload } from "react-csv";
 
 const TableUsers = (props) => {
 
@@ -28,6 +29,8 @@ const TableUsers = (props) => {
     const [sortField, setSortField] = useState("id");
 
     const [keyword, setKeyword] = useState('');
+
+    const [dataExport, setDataExport] = useState([]);
 
     const handleClose = () => {
       setIsShowModalAddNew(false);
@@ -108,13 +111,44 @@ const TableUsers = (props) => {
         }
     }, 500)   
 
+    const csvData = [
+        ["firstname", "lastname", "email"],
+        ["Ahmed", "Tomi", "ah@smthing.co.com"],
+        ["Raed", "Labes", "rl@smthing.co.com"],
+        ["Yezzi", "Min l3b", "ymin@cocococo.com"]
+    ];
+
+    const getUsersExport = (even, done) => {
+        let result = [];
+        if(listUsers && listUsers.length > 0) {
+            
+        }
+    }
+
     return (
         <>
             <div className="my-3 d-flex justify-content-between">
                 <span><b>List Users:</b></span>
-                <button className="btn btn-success"
-                onClick={() => setIsShowModalAddNew(true)}
-                >Add new user</button>
+                <div className="group-btns">
+                    <label className="btn btn-warning" htmlFor="test">
+                        <i className="fa-solid fa-file-import px-1"></i>Import
+                    </label>
+                    <input id="test" type="file" hidden/>
+                    
+                    <CSVLink 
+                        filename={"users.csv"}
+                        className="btn btn-primary"
+                        data={dataExport}
+                        asyncOnClick={true}
+                        onClick={getUsersExport}
+                    >
+                    <i className="fa-solid fa-file-arrow-down px-1"></i>Export</CSVLink>
+                    <button className="btn btn-success"
+                    onClick={() => setIsShowModalAddNew(true)}
+                    >
+                        <i className="fa-solid fa-circle-plus px-1"></i>Add new
+                    </button>
+                </div>
             </div>
             <div className="col-4 my-3">
                 <input 
