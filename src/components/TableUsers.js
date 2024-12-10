@@ -4,6 +4,12 @@ import {fetchAllUser} from "../services/userSevice"
 import ReactPaginate from 'react-paginate';
 import ModalAddNew from './ModalAddNew';
 import ModalEditUser from "./ModalEditUser";
+import _ from "lodash";
+import ModalConfirm from "./ModalConfirm";
+
+import './TableUser.scss'
+
+import { debounce } from "lodash";
 
 const TableUsers = (props) => {
 
@@ -15,18 +21,35 @@ const TableUsers = (props) => {
     const [isShowModalEdit, setIsShowModalEdit] = useState(false);
     const [dataUserEdit, setDataUserEdit] = useState({});
 
+    const [isShowModalDelete, setIsShowModalDelete] = useState(false);
+    const [dataUserDelete, setDataUserDelete] = useState({});
+
+    const [sortBy, setSortBy] = useState("asc");
+    const [sortField, setSortField] = useState("id");
+
+    const [keyword, setKeyword] = useState('');
+
     const handleClose = () => {
       setIsShowModalAddNew(false);
       setIsShowModalEdit(false);
+      setIsShowModalDelete(false);
     }
 
     const handleUpdateTable = (user) => {
         setListUsers([user, ...listUsers])
     }
 
+    const handleEditUserFromModal = (user) => {
+        let cloneListUsers = _.cloneDeep(listUsers); 
+        let index = listUsers.findIndex(item => item.id === user.id);
+        cloneListUsers[index].first_name = user.first_name;
+        // console.log(listUsers, cloneListUsers) //dung cloneDeep cua lodash de tro ve 2 bo nho khac nhau
+        setListUsers(cloneListUsers);
+    }
+
     useEffect(() => {
         //call apis
-        getUsers(2);
+        getUsers(1);
         
     }, [])
 
@@ -51,6 +74,39 @@ const TableUsers = (props) => {
         setIsShowModalEdit(true);
     }
 
+    const handleDeleteUser = (user) => {
+        setIsShowModalDelete(true);
+        setDataUserDelete(user);
+    }
+    
+    const handleDeleteUserFromModal =(user) => {
+        let cloneListUsers = _.cloneDeep(listUsers); 
+        cloneListUsers = cloneListUsers.filter(item => item.id !== user.id);
+        
+        // console.log(listUsers, cloneListUsers) //dung cloneDeep cua lodash de tro ve 2 bo nho khac nhau
+        setListUsers(cloneListUsers);
+    }
+
+    const handleSort = (sortBy, sortField) => {
+        setSortBy(sortBy); 
+        setSortField(sortField);
+        let cloneListUsers = _.cloneDeep(listUsers); 
+        cloneListUsers = _.orderBy(cloneListUsers, [sortField], [sortBy]);
+        setListUsers(cloneListUsers);
+    }
+
+    const handleSearch = debounce((event) => { // dung ham debounce de sau 0.5s api moi res ket qua
+        console.log(event.target.value);
+        let term = event.target.value;
+        if(term) {
+            //đang làm phía client
+            let cloneListUsers = _.cloneDeep(listUsers); 
+            cloneListUsers = cloneListUsers.filter(item => item.email.includes(term))
+            setListUsers(cloneListUsers);
+        } else {
+            getUsers(1);
+        }
+    }, 500)   
 
     return (
         <>
@@ -60,13 +116,50 @@ const TableUsers = (props) => {
                 onClick={() => setIsShowModalAddNew(true)}
                 >Add new user</button>
             </div>
+            <div className="col-4 my-3">
+                <input 
+                    className="form-control" 
+                    placeholder="Search user by email..."
+                    // value={keyword}
+                    onChange={(event) => handleSearch(event)}
+                />
+            </div>
+        
             <Table striped bordered hover>
                 <thead>
                     <tr>
-                        <th>ID</th>
+                        <th>
+                        <div className="sort-header">
+                            <span>ID</span>
+                            <span>
+                                <i 
+                                    className="fa-solid fa-arrow-down-long"
+                                    onClick={() => handleSort("desc", "id")}
+                                ></i>
+                                <i 
+                                    className="fa-solid fa-arrow-up-long"
+                                    onClick={() => handleSort("asc", "id")}
+                                ></i>
+                            </span>
+                        </div>
+                        </th>
                         <th>Email</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
+                        <th>
+                            <div className="sort-header">
+                                <span>First name</span>
+                                <span>
+                                    <i 
+                                        className="fa-solid fa-arrow-down-long"
+                                        onClick={() => handleSort("desc", "first_name")}
+                                    ></i>
+                                    <i 
+                                        className="fa-solid fa-arrow-up-long"
+                                        onClick={() => handleSort("asc", "first_name")}
+                                    ></i>
+                                </span>
+                            </div>
+                        </th>
+                        <th>Last name</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -81,7 +174,7 @@ const TableUsers = (props) => {
                                 <td>{item.last_name}</td>
                                 <td>
                                     <button className="btn btn-warning mx-3" onClick={() => handleEditUser(item)}>Edit</button>
-                                    <button className="btn btn-danger">Delete</button>
+                                    <button className="btn btn-danger" onClick={() => handleDeleteUser(item)}>Delete</button>
                                 </td>
                             </tr>
                         )
@@ -116,6 +209,13 @@ const TableUsers = (props) => {
                 show={isShowModalEdit}
                 dataUserEdit={dataUserEdit}
                 handleClose={handleClose}
+                handleEditUserFromModal={handleEditUserFromModal}
+            />
+            <ModalConfirm
+                show={isShowModalDelete}
+                handleClose={handleClose}
+                dataUserDelete={dataUserDelete}
+                handleDeleteUserFromModal={handleDeleteUserFromModal}
             />
         </>
     );
