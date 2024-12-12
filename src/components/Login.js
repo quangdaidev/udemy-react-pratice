@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { loginApi } from "../services/userSevice";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { UserContext } from "./context/UserContext";
 
 const Login = () => {
     const navigate = useNavigate();
+    const { loginContext } = useContext(UserContext);
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -12,12 +15,12 @@ const Login = () => {
 
     const [loadingAPI, setLoadingAPI] = useState(false);
     
-    useEffect(() => {
-        let token = localStorage.getItem("token");
-        if (token) {
-            navigate("/");
-        }
-    },[])
+    // useEffect(() => {
+    //     let token = localStorage.getItem("token");
+    //     if (token) {
+    //         navigate("/");
+    //     }
+    // },[])
 
     const handleLogin = async () => {
 
@@ -27,10 +30,10 @@ const Login = () => {
         }
         setLoadingAPI(true);
         //"eve.holt@reqres.in"
-        let res = await loginApi(email, password);
+        let res = await loginApi(email.trim(), password);
         console.log(">>>check res: ", res)
         if(res && res.token) {
-            localStorage.setItem("token", res.token);
+            loginContext(email, res.token);
             navigate("/");
         } else {
             //error
@@ -39,6 +42,17 @@ const Login = () => {
             }
         }
         setLoadingAPI(false);
+    }
+
+    const hanldeGoBack = () => {
+        navigate("/");
+    }
+
+    const handlePressEnter = (event) => {
+        // console.log(event)
+        if(event && event.key === 'Enter'){
+            handleLogin();
+        }
     }
 
     return(<>
@@ -57,6 +71,7 @@ const Login = () => {
                     placeholder="Password..."
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
+                    onKeyDown={(event) => handlePressEnter(event)}
                 />
                 <li 
                     className={isShowPassword === true ? "fa-solid fa-eye" : "fa-solid fa-eye-slash"}
@@ -70,7 +85,8 @@ const Login = () => {
                 >
                 {loadingAPI && <li className="fa-solid fa-sync fa-spin"></li>}&nbsp;Login</button>
             <div className="back">
-                <li className="fa-solid fa-chevron-left"></li>Go back
+                <li className="fa-solid fa-chevron-left"></li>
+                <span onClick={() => hanldeGoBack()}>&nbsp;Go back</span>
             </div>
         </div>
     </>)

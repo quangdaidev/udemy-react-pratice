@@ -199,9 +199,10 @@ const TableUsers = (props) => {
                         asyncOnClick={true}
                         onClick={getUsersExport}
                     >
-                    <i className="fa-solid fa-file-arrow-down px-1"></i>Export</CSVLink>
+                        <i className="fa-solid fa-file-arrow-down px-1"></i>Export
+                    </CSVLink>
                     <button className="btn btn-success"
-                    onClick={() => setIsShowModalAddNew(true)}
+                        onClick={() => setIsShowModalAddNew(true)}
                     >
                         <i className="fa-solid fa-circle-plus px-1"></i>Add new
                     </button>

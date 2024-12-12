@@ -1,26 +1,30 @@
 import React from "react";
 
-const UserContext = React.createContext({ name:'', auth: false});
+const UserContext = React.createContext({ email:'', auth: false});
 
 const UserProvider = ({ children }) => {
-    const [user, setUser] = React.useState({ name:'', auth: false});
+    const [user, setUser] = React.useState({email:'', auth: false});
 
-    const login = (name) => {
+    const loginContext = (email, token) => {
         setUser((user) => ({
-            name: name,
+           email:email,
             auth: true,
         }));
+        localStorage.setItem("token", token);
+        localStorage.setItem("email", email);
     };
 
     const logout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("email");
         setUser((user) => ({
-            name: '',
+           email: '',
             auth: false,
         }));
     };
 
     return (
-        <UserContext.Provider value={{ user, login, logout}}>
+        <UserContext.Provider value={{ user, loginContext, logout}}>
             {children}
         </UserContext.Provider>
     )
